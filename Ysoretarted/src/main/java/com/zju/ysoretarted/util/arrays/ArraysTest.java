@@ -7,6 +7,7 @@ import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.IntUnaryOperator;
 
 /**
  * @author zcz
@@ -14,6 +15,14 @@ import java.util.List;
  */
 public class ArraysTest {
     public static void main(String[] args) {
+        List<Integer> integers = Arrays.asList(1, 2, 5, 6);
+        integers.add(5);
+        Integer[] a = new Integer[]{1,3,100,5};
+        Arrays.setAll(a, x-> a[x] * 2);
+        for(int x : a){
+            System.out.println(x);
+        }
+        System.out.println("=============");
         Person[] peopleArray = new Person[5];
         Person person1 = new Person("111",1L);
         Person person3 = new Person("333",3L);
@@ -39,7 +48,11 @@ public class ArraysTest {
         for(Person x : peopleArray){
             System.out.println(x.getName());
         }
+        int[] binaryArray = { 1,3,3,4,5,6,7,8,9,10,11};
+        int i = Arrays.binarySearch(binaryArray, 3);
+        System.out.println(i);
     }
+
 
 
 
