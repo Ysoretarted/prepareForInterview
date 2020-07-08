@@ -1,4 +1,4 @@
-package com.zju.ysoretarted.designPattern.callbackPattern;
+package com.zju.ysoretarted.designPattern.callback;
 
 /**
  * @author zcz

@@ -1,6 +1,6 @@
-package com.zju.ysoretarted.designPattern.decoratePattern.heros;
+package com.zju.ysoretarted.designPattern.decorate.heros;
 
-import com.zju.ysoretarted.designPattern.decoratePattern.Iequipment;
+import com.zju.ysoretarted.designPattern.decorate.Iequipment;
 
 /**
  *

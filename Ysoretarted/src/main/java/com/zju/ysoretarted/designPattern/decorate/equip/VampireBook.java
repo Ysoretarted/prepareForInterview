@@ -1,8 +1,6 @@
-package com.zju.ysoretarted.designPattern.decoratePattern.equip;
+package com.zju.ysoretarted.designPattern.decorate.equip;
 
-import com.zju.ysoretarted.designPattern.decoratePattern.Iequipment;
-
-import java.util.Vector;
+import com.zju.ysoretarted.designPattern.decorate.Iequipment;
 
 /**  吸血书
  *   装备是来修饰英雄的

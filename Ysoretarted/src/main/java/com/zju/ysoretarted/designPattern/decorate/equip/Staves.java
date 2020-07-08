@@ -1,6 +1,6 @@
-package com.zju.ysoretarted.designPattern.decoratePattern.equip;
+package com.zju.ysoretarted.designPattern.decorate.equip;
 
-import com.zju.ysoretarted.designPattern.decoratePattern.Iequipment;
+import com.zju.ysoretarted.designPattern.decorate.Iequipment;
 
 /**   法杖
  *    装备是来修饰 英雄的

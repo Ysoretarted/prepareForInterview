@@ -1,9 +1,9 @@
-package com.zju.ysoretarted.designPattern.decoratePattern;
+package com.zju.ysoretarted.designPattern.decorate;
 
-import com.zju.ysoretarted.designPattern.decoratePattern.equip.Staves;
-import com.zju.ysoretarted.designPattern.decoratePattern.equip.VampireBook;
-import com.zju.ysoretarted.designPattern.decoratePattern.heros.FireDance;
-import com.zju.ysoretarted.designPattern.decoratePattern.heros.ZhuGeLiang;
+import com.zju.ysoretarted.designPattern.decorate.equip.Staves;
+import com.zju.ysoretarted.designPattern.decorate.equip.VampireBook;
+import com.zju.ysoretarted.designPattern.decorate.heros.FireDance;
+import com.zju.ysoretarted.designPattern.decorate.heros.ZhuGeLiang;
 
 /**
  * @author zcz

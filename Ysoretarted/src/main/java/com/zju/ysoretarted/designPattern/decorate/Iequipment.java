@@ -1,4 +1,4 @@
-package com.zju.ysoretarted.designPattern.decoratePattern;
+package com.zju.ysoretarted.designPattern.decorate;
 
 /**
  * @author zcz
