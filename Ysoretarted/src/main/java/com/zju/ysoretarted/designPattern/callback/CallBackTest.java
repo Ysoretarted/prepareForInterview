@@ -9,6 +9,6 @@ public class CallBackTest {
         MyServer server = new MyServer();
         MyClient client = new MyClient(server);
 
-        client.request(client);
+        client.request();
     }
 }
