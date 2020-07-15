@@ -18,22 +18,6 @@ ExecutorService threadPool2 = Executors.newCachedThreadPool();  // 一池N线程
 */
 ```
 
-以上三个线程池都是通过``` ThreadPoolExecutor```这个类初始化的，这类**重要**
-
-## 参数含义
-
-线程池的7大参数含义：
-
-1. ```corePoolsize```：核心线程数
-2. ```maximumPoolSize```：线程池最多能容纳的最大线程数
-3. ```keepAliveTime```：多余的空闲线程（超过核心线程数，且当前没有任务），当空闲时间达到keepAliveTime时，多余的空闲线程会被销毁，直到只剩下corePoolsize的线程数为止。
-4. ```unit```：keepAliveTime的时间单位
-5. ```workQueue```：任务队列（是一个阻塞队列），存储被提交但尚未被执行的任务
-6. ```threadFactory```：表示创建线程的线程工厂，   一般默认
-7. ```handler```：拒绝策略，表示workQueue满了（提前 线程数达到最大线程数），执行拒绝策略（有4种）
-
-
-
 拒绝策略：（4种），下面4种是JDK内置的拒绝策略（均实现了RejectedExecutionHandler接口）
 
 1. AbortPolicy(默认)：直接抛出RejectExecutionException异常阻止系统正常运行。
@@ -67,54 +51,78 @@ Runtime.getRuntime().availableProcessors(); //获取CPU核数
 
 
 
-```java
-    private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
-    private static final int COUNT_BITS = Integer.SIZE - 3;     // 29
-    private static final int CAPACITY   = (1 << COUNT_BITS) - 1;   //后29位全是1
+##  参数含义
 
-    private static final int RUNNING    = -1 << COUNT_BITS; //1111 …… 1111 <<29 = 1110 00
-    private static final int SHUTDOWN   =  0 << COUNT_BITS; // 高3位000
-    private static final int STOP       =  1 << COUNT_BITS; // 高3位001
-    private static final int TIDYING    =  2 << COUNT_BITS; // 高3位010
-    private static final int TERMINATED =  3 << COUNT_BITS; // 高3位011
-
-    private static int runStateOf(int c)     { return c & ~CAPACITY; } //获取运行状态
-    private static int workerCountOf(int c)  { return c & CAPACITY; } //获取活动线程数
-    private static int ctlOf(int rs, int wc) { return rs | wc; }//获取运行状态和活动线程数的值
-```
-
-
-
->线程池的状态：
+> 构造函数的七大参数：
 >
+>
+> 1. ```corePoolsize```：核心线程数
+> 2. ```maximumPoolSize```：线程池最多能容纳的最大线程数
+> 3. ```keepAliveTime```：多余的空闲线程（超过核心线程数，且当前没有任务），当空闲时间达到```keepAliveTime```时，多余的空闲线程会被销毁。
+> 4. ```unit```：```keepAliveTime```的时间单位
+> 5. ```workQueue```：任务队列（是一个阻塞队列），存储被提交但尚未被执行的任务
+> 6. ```threadFactory```：表示创建线程的线程工厂，   一般默认为 ```Executors.defaultThreadFactory()```
+> 7. ```handler```：拒绝策略，表示```workQueue```满了（提前 线程数达到最大线程数），执行拒绝策略（有4种）
+
+**注意**：核心和非核心线程其实是等价的。
+
+## 线程池的状态
+
 >1. RUNNING：接受新任务，并且处理阻塞队列中的任务
 >2. SHUTDOWN：不接受新任务，但处理队列中的任务
 >3. STOP：不接受新任务，不处理队列中的任务，    并且中断在执行的任务。
 >4. TIDYING（整理状态）：当所有的任务已终止，ctl记录的”任务数量”为0，线程池会变为TIDYING状态
 >5. TERMINATED：线程池彻底终止
 
-> 状态转换：
->
+## 线程池的状态转换
+
 > 1. RUNNING -> SHUTDOWN： 调用```shutdown()```
-> 2. RUNNING or SHUTDOWN) -> STOP:   调用```shutdownNow()```
+>2. RUNNING or SHUTDOWN) -> STOP:   调用```shutdownNow()```
 > 3. SHUTDOWN -> TIDYING:    阻塞队列为空并且线程池中执行的任务也为空时，就会由 SHUTDOWN -> TIDYING
 > 4. STOP -> TIDYING：   线程池中执行的任务为空。
 > 5. TIDYING -> TERMINATED：  当钩子函数 ```terminated()```执行完成
 
-##  参数含义
+## 拒绝策略
 
-> 构造函数的七大参数：
+>只要实现```RejectedExecutionHandler``` 接口就的```void rejectedExecution(Runnable r, ThreadPoolExecutor executor);```就可以了
+>
+>一下四种拒绝策略都是```ThreadPoolExecutor```的内部类。
+>
+>1. ```AbortPolicy```: 直接抛出异常。 
+>
+>```Java
+>public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+>            throw new RejectedExecutionException("Task " + r.toString() +
+>                                                 " rejected from " +
+>                                                 e.toString());
+>}
+>```
+>
+>2. ```CallerRunsPolicy```: 用调用者所在的线程来执行任务。
+>
+>```Java
+>public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+>            if (!e.isShutdown()) {
+>                r.run();
+>            }
+>}
+>```
+>
+>3. ```DiscardPolicy```: 抛弃任务。   什么事都不做就是抛弃了。
+>4. ``DiscardOldestPolicy``：抛弃阻塞队列中，等待最久的任务。然后把当前任务加入队列中，再尝试提交当前任务。
+>
+>```Java
+> public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+>            if (!e.isShutdown()) {
+>                e.getQueue().poll();
+>                e.execute(r);
+>            }
+> }
+>```
 >
 >
->1. ```corePoolsize```：核心线程数
->2. ```maximumPoolSize```：线程池最多能容纳的最大线程数
->3. ```keepAliveTime```：多余的空闲线程（超过核心线程数，且当前没有任务），当空闲时间达到```keepAliveTime```时，多余的空闲线程会被销毁。
->4. ```unit```：```keepAliveTime```的时间单位
->5. ```workQueue```：任务队列（是一个阻塞队列），存储被提交但尚未被执行的任务
->6. ```threadFactory```：表示创建线程的线程工厂，   一般默认为 ```Executors.defaultThreadFactory()```
->7. ```handler```：拒绝策略，表示```workQueue```满了（提前 线程数达到最大线程数），执行拒绝策略（有4种）
-
-**注意**：核心和非核心线程其实是等价的。
+>
+>
 
 **任务提交的方式：**
 
@@ -134,6 +142,21 @@ Runtime.getRuntime().availableProcessors(); //获取CPU核数
 
 各个函数解读：
 
+```Java
+private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
+private static final int COUNT_BITS = Integer.SIZE - 3;     // 29
+private static final int CAPACITY   = (1 << COUNT_BITS) - 1;   //后29位全是1
+
+private static final int RUNNING    = -1 << COUNT_BITS; //1111 …… 1111 <<29 = 1110 00
+private static final int SHUTDOWN   =  0 << COUNT_BITS; // 高3位000
+private static final int STOP       =  1 << COUNT_BITS; // 高3位001
+private static final int TIDYING    =  2 << COUNT_BITS; // 高3位010
+private static final int TERMINATED =  3 << COUNT_BITS; // 高3位011
+
+private static int runStateOf(int c)     { return c & ~CAPACITY; } //获取运行状态
+private static int workerCountOf(int c)  { return c & CAPACITY; } //获取活动线程数
+private static int ctlOf(int rs, int wc) { return rs | wc; }//获取运行状态和活动线程数的值
+```
 ```java
 public void execute(Runnable command) {
         if (command == null)                          
@@ -150,9 +173,9 @@ public void execute(Runnable command) {
             //double check 如果不是运行状态，移除之前入队的command
             // 然后执行拒绝策略
             int recheck = ctl.get();
-            if (! isRunning(recheck) && remove(command))    // 这里什么时候移除失败?????
+            if (! isRunning(recheck) && remove(command))    // 这里什么时候移除失败????  可能这个任务，在这之前被拿走了
                 reject(command);
-            //获取线程池中的线程数，如果为0，则执行addWorker方法       为什么要为0呢？？？
+            //获取线程池中的线程数，如果为0，则执行addWorker方法       为什么要为0呢？？？  为什么传null
             else if (workerCountOf(recheck) == 0)
                 addWorker(null, false);
         }
@@ -232,12 +255,12 @@ private boolean addWorker(Runnable firstTask, boolean core) {
                     mainLock.unlock();
                 }
                 if (workerAdded) {
-                    t.start();   //因为Worker实现了Runnable，所以会调用Worker的run()
+                    t.start();   //因为Worker实现了Runnable，所以会调用Worker的run()，从而调用runWorker()
                     workerStarted = true;   //表明worker启动
                 }
             }
         } finally {
-            if (! workerStarted)
+            if (! workerStarted)   //经过上面的处理，任务还没楷书的话，说明任务添加失败。
                 addWorkerFailed(w);
         }
         return workerStarted;
@@ -256,25 +279,23 @@ final void runWorker(Worker w) {
         Runnable task = w.firstTask;
         w.firstTask = null;
         w.unlock(); // allow interrupts             //  允许中断??????????
-        boolean completedAbruptly = true;
+        boolean completedAbruptly = true;       //这个标志位是干嘛的？？
         try {
             //getTask()从阻塞队列中取任务
             while (task != null || (task = getTask()) != null) {
-                w.lock();
-                // If pool is stopping, ensure thread is interrupted;
-                // if not, ensure thread is not interrupted.  This
-                // requires a recheck in second case to deal with
-                // shutdownNow race while clearing interrupt
+                w.lock();                 // ??????
+                
+                
                 if ((runStateAtLeast(ctl.get(), STOP) ||
                      (Thread.interrupted() &&
                       runStateAtLeast(ctl.get(), STOP))) &&
                     !wt.isInterrupted())
                     wt.interrupt();
                 try {
-                    beforeExecute(wt, task);
+                    beforeExecute(wt, task);    //前置处理
                     Throwable thrown = null;
                     try {
-                        task.run();
+                        task.run();  //执行任务
                     } catch (RuntimeException x) {
                         thrown = x; throw x;
                     } catch (Error x) {
@@ -291,7 +312,8 @@ final void runWorker(Worker w) {
                 }
             }
             completedAbruptly = false;
-        } finally {
+        } finally {//从while循环出来
+            //运行到这里说明已经没有任务了（包括阻塞队列），拿不到任务， 则销毁线程。
             processWorkerExit(w, completedAbruptly);
         }
     }
@@ -299,7 +321,7 @@ final void runWorker(Worker w) {
 
 ```Java
 private Runnable getTask() {
-        boolean timedOut = false; // Did the last poll() time out?
+        boolean timedOut = false; //上一次去取任务是否超时
 
         for (;;) {
             int c = ctl.get();
@@ -313,23 +335,29 @@ private Runnable getTask() {
 
             int wc = workerCountOf(c);
 
-            // Are workers subject to culling?
+            // 核心线程是否要超时销毁，  存在非核心就一定要超时销毁
             boolean timed = allowCoreThreadTimeOut || wc > corePoolSize;
 
-            if ((wc > maximumPoolSize || (timed && timedOut))
-                && (wc > 1 || workQueue.isEmpty())) {
-                if (compareAndDecrementWorkerCount(c))
+            // wc > maximumPoolSize  maxmumPoolSize可能动态的设置过了，所以要比较
+            // 超时标志位为true，并且上一次超时了
+            if ((wc > maximumPoolSize || (timed && timedOut))  
+                && (wc > 1 || workQueue.isEmpty())) {   // wc == 1 ????
+                if (compareAndDecrementWorkerCount(c)) //cas减工作线程数
                     return null;
-                continue;
+                continue;   //减失败，重试
             }
 
             try {
+                // 
+                //非核心一定是poll。 核心可以通过设置allowCoreThreadTimeOut，让它走poll
+                //timed为true， 则核心、非核心都是 用poll(), 会有超时时间
+                // take()是一个阻塞方法， 拿不到任务就一直阻塞
                 Runnable r = timed ?
-                    workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS) :
+                    workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS);
                     workQueue.take();
                 if (r != null)
-                    return r;
-                timedOut = true;
+                    return r;   //拿到就返回
+                timedOut = true; //超时，r == null， 设置超时标志位
             } catch (InterruptedException retry) {
                 timedOut = false;
             }
@@ -349,7 +377,7 @@ private void processWorkerExit(Worker w, boolean completedAbruptly) {
         mainLock.lock();
         try {
             completedTaskCount += w.completedTasks;
-            workers.remove(w);
+            workers.remove(w);  //移除工作线程
         } finally {
             mainLock.unlock();
         }
@@ -361,7 +389,7 @@ private void processWorkerExit(Worker w, boolean completedAbruptly) {
             if (!completedAbruptly) {
                 int min = allowCoreThreadTimeOut ? 0 : corePoolSize;
                 if (min == 0 && ! workQueue.isEmpty())
-                    min = 1;
+                    min = 1;   //如果队列非空，至少保留一个核心线程
                 if (workerCountOf(c) >= min)
                     return; // replacement not needed
             }

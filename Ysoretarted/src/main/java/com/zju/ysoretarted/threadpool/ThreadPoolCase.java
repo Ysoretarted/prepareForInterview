@@ -15,12 +15,24 @@ public class ThreadPoolCase {
                 new ArrayBlockingQueue<>(10), Executors.defaultThreadFactory(),
                 new ThreadPoolExecutor.CallerRunsPolicy());
 
+        /*Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("這是 調試 runnable");
+            }
+        };*/
         for(int i = 0; i < 20; i++){
             final int tmp = i;
             Runnable runnable = ()->{
-                System.out.println("第 " + tmp + "个任务");
+                System.out.println("這是 第 " + tmp+ "任務");
             };
             executor.execute(runnable);
         }
+       /*Thread thread = new Thread(()->{
+           Thread t = Thread.currentThread();
+           System.out.println(t.getName());
+       });
+
+       thread.start();*/
     }
 }
