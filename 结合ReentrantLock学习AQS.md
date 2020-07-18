@@ -236,3 +236,69 @@ private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
 }
 ```
 
+
+
+
+
+## 释放锁的过程
+
+```Java
+public final boolean release(int arg) {
+        if (tryRelease(arg)) {  //返回释放锁的结果，成功：true。  并设置state的值
+            Node h = head;
+            if (h != null && h.waitStatus != 0)  //队列不为空
+                unparkSuccessor(h);    //在队列中进行唤醒操作
+            return true;     //成功释放锁
+        }
+        return false;  //没释放锁
+}
+```
+
+
+
+```Java
+protected final boolean tryRelease(int releases) {
+    int c = getState() - releases;
+    if (Thread.currentThread() != getExclusiveOwnerThread())  //判断当前线程是不是持有该锁
+        throw new IllegalMonitorStateException();
+    boolean free = false;  //释放成功的标志
+    if (c == 0) {       // 因为可重入，c还是有可能 > 0 的
+        free = true;
+        setExclusiveOwnerThread(null);   
+    }
+    setState(c);
+    return free;   //返回锁的状态
+}
+```
+
+
+
+```Java
+private void unparkSuccessor(Node node) {
+        /*
+         * If status is negative (i.e., possibly needing signal) try
+         * to clear in anticipation of signalling.  It is OK if this
+         * fails or if status is changed by waiting thread.
+         */
+        int ws = node.waitStatus;
+        if (ws < 0)
+            compareAndSetWaitStatus(node, ws, 0);
+
+        /*
+         * Thread to unpark is held in successor, which is normally
+         * just the next node.  But if cancelled or apparently null,
+         * traverse backwards from tail to find the actual
+         * non-cancelled successor.
+         */
+        Node s = node.next;
+        if (s == null || s.waitStatus > 0) {  //这是什么情况??
+            s = null;
+            for (Node t = tail; t != null && t != node; t = t.prev)
+                if (t.waitStatus <= 0)
+                    s = t;
+        }
+        if (s != null)
+            LockSupport.unpark(s.thread);   //唤醒
+}
+```
+

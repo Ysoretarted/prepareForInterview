@@ -11,6 +11,7 @@ public class ThreadPoolCase {
 
     public static void main(String[] args) {
 
+        ThreadPoolExecutor executorAAA = ((ThreadPoolExecutor) Executors.newSingleThreadExecutor());
         ThreadPoolExecutor executor = new ThreadPoolExecutor(5,10,5000, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<>(10), Executors.defaultThreadFactory(),
                 new ThreadPoolExecutor.CallerRunsPolicy());
@@ -23,9 +24,8 @@ public class ThreadPoolCase {
         };*/
         for(int i = 0; i < 20; i++){
             final int tmp = i;
-            Runnable runnable = ()->{
-                System.out.println("這是 第 " + tmp+ "任務");
-            };
+            Runnable runnable = ()-> System.out.println("這是 第 " + tmp+ "任務");
+            ;
             executor.execute(runnable);
         }
        /*Thread thread = new Thread(()->{
