@@ -50,6 +50,12 @@ public class MyZset {
         int span;
     }
 
+    /**
+     * worst O(N)   avg O(logN)
+     * @param addScore
+     * @param addObj
+     * @return
+     */
     public ZSkipListNode insert(double addScore, Object addObj) {
         if (table == null) {
             initTable();
@@ -58,7 +64,7 @@ public class MyZset {
         int[] rank = new int[MAXLEVEL];   // 第i层到更新点的 距离，rank越往下走，越大
         ZSkipListNode x;
 
-        x = table.head;
+        x = table.head;  //x 是一直 next 移的
         for (int i = table.level - 1; i >= 0; --i) {
             rank[i] = (i == table.level - 1) ? 0 : rank[i + 1];
             while (x.level[i].next != null &&
@@ -152,6 +158,11 @@ public class MyZset {
         return ret;
     }
 
+    /**
+     * worst O(N)  avg O(log N)
+     * @param score
+     * @return
+     */
     private ZSkipListNode getZSkipListNode(double score) {
         ZSkipListNode x = table.head;
         for (int i = table.level - 1; i >= 0; --i) {
@@ -175,7 +186,7 @@ public class MyZset {
      * 维护table 的长度
      * level的最大值？？？  解决
      * 更新tail
-     *
+     *  O(log N)  O(N)
      * @param score
      */
     public int delete(double score, Object obj) {
@@ -219,7 +230,7 @@ public class MyZset {
         System.out.println();
     }
 
-    /**
+    /**  O(1)
      * @param x      要删除的节点（含位置信息）
      * @param update 每一层的前置节点
      */
