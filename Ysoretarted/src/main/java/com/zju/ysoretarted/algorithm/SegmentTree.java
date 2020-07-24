@@ -1,0 +1,153 @@
+package com.zju.ysoretarted.algorithm;
+
+import java.util.Scanner;
+
+public class SegmentTree {
+
+    private static Scanner cin = new Scanner(System.in);
+    private static final int MAXN = 100;
+    private static int[] tree = new int[MAXN];
+    private static int[] lazyTag = new int[MAXN];
+
+    /**
+     * 建树
+     * @param left
+     * @param right
+     * @param rt
+     */
+    public static void buildTree(int left, int right, int rt){
+        if(left > right)
+            return;
+        if(left == right){
+            tree[rt] = cin.nextInt();
+            return ;
+        }
+        int mid = left + (right - left) /2;
+        buildTree(left, mid, rt << 1);
+        buildTree(mid +1, right, ((rt <<1) + 1));
+        tree[rt] = tree[rt << 1] + tree[(rt << 1) + 1];  //加括号，注意运算符的优先级
+    }
+
+
+    /**  单点更新
+     *    在下标为ind的地方 加 k
+     *     当 left == right ，这两个数代表虚拟的下标  a[1], a[2]，这种
+     *     rt 只是用来维护 二叉树的关系的
+     * @param left
+     * @param right
+     * @param ind
+     * @param k
+     * @param rt
+     */
+    public  static void update(int left, int right, int ind, int k,int rt){
+        System.out.println(left + "  " + right);
+        if(left > right)
+            return;
+        if(left == right){
+            tree[rt] += k;
+            return ;
+        }
+        int mid = left + ((right- left) >> 1);
+        if(ind <= mid)
+            update(left, mid, ind, k, rt <<1);
+        else
+            update(mid + 1, right, ind, k, (rt << 1) + 1);
+        tree[rt] = tree[rt << 1] + tree[(rt << 1) + 1];
+
+    }
+
+    /**
+     *
+     * @param left
+     * @param right
+     * @param myLeft     myLeft 区间范围查询 左端点
+     * @param myRight    myRight 区间查询 右端点
+     * @param rt
+     * @return
+     */
+    public static int query(int left, int right, int myLeft, int myRight, int rt){
+        if(myLeft > right || myRight < left)   //目标区间 不在当前区间
+            return 0;
+        if(myLeft <= left && myRight >= right)// 目标区间 完全覆盖 当前区间
+            return tree[rt];
+        int mid = left + ((right - left) >> 1);
+
+        // TODO
+        push_down(left, right, rt);   //这里要处理之前的更新
+        int ans = 0;
+        if(mid >= myLeft)     // 目标区间 和 当前区间的左区间有交集
+            ans += query(left, mid, myLeft, myRight, rt << 1);
+        if(mid + 1 <= myRight)   // 目标区间 和 当前区间的有区间有交集
+            ans += query(mid + 1, right, myLeft, myRight, ((rt << 1) + 1));
+        return ans;
+
+    }
+
+    /**
+     * 这个好像不行
+     * @param rt
+     */
+    /*public static void add(int left, int right, int myLeft, int myRight, int k, int rt){
+        if(myLeft <= left && myRight >= right){
+            tree[rt] += k;
+            return ;
+        }
+        int mid = left + ((right - left) >> 1);
+        if(mid >= myLeft)
+            add(left, mid, myLeft, myRight, k, rt << 1);
+        if(mid + 1 <= myRight)
+            add(mid + 1, right, myLeft, myRight, k, (rt<< 1) + 1);
+    }*/
+
+
+    private static void update(int left, int right, int myLeft, int myRight, int k, int rt){
+        if(myLeft <= left && myRight >= right){
+            setTag(left, right, k, rt);    //当前区间被查询区间完全覆盖
+            return ;
+        }
+
+
+        //?????? TODO
+        push_down(left, right, rt);//这个区间维护的区间不在需要区间内(顺便下传懒标记)
+        int mid = left + (right - left) / 2;
+
+        if(myLeft <= mid)
+            update(left, mid, myLeft, myRight, k, rt << 1);
+        if(mid + 1 <= myRight)
+            update(mid + 1, right, myLeft, myRight, k, rt <<1 | 1);
+        push_up(rt);
+    }
+
+    private static void push_down(int left, int right, int rt) {
+        int mid = left + (right - left) / 2;
+        //因为父 区间  完全涵盖了 左右区间，所有无论如何都要传递 lazy
+        setTag(left, mid, lazyTag[rt], rt << 1);
+        setTag(mid + 1, right, lazyTag[rt], rt << 1 | 1);
+        lazyTag[rt] = 0;
+    }
+
+    private static void setTag(int left, int right, int k, int rt) {
+        lazyTag[rt] += k;
+        tree[rt] += k * (right - left + 1);
+        return ;
+    }
+
+    private static void push_up(int rt){
+        tree[rt] = tree[rt << 1] + tree[rt << 1 | 1];
+    }
+
+
+    public static void main(String[] args) {
+        buildTree(1, 10, 1);
+       // update(1,10,6,100,1);
+       System.out.println(query(1, 10, 1, 10, 1));
+
+
+        //System.out.println(query(1, 10,8 , 6, 1));
+       // add(1,10,1,10,10,1);
+
+        update(1,10,1,8,10,1);
+        System.out.println(query(1, 10, 1, 10, 1));
+        System.out.println();
+    }
+}
