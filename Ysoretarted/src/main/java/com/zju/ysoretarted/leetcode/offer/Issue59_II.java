@@ -1,5 +1,7 @@
 package com.zju.ysoretarted.leetcode.offer;
 
+import com.sun.deploy.util.StringUtils;
+
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -36,5 +38,48 @@ public class Issue59_II {
             window.removeFirst();
         }
         return x;
+    }
+
+
+    public static void main(String[] args) {
+        Person person = new Person("zcz",5);
+       /* person.setStatus(0);
+        person.setName("AAA");*/
+        change(person);
+        System.out.println(person.getStatus());
+        System.out.println(person.getName());
+
+
+    }
+
+    static class Person{
+        private int status;
+        private String name;
+
+        Person(String name, int status){
+            this.name = name;
+            this.status = status;
+        }
+
+        public int getStatus() {
+            return status;
+        }
+
+        public void setStatus(int status) {
+            this.status = status;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+   static void change(Person person){
+        person.setName("AAA");
+        person.setStatus(0);
     }
 }

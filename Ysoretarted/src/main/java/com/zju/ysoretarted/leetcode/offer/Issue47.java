@@ -1,5 +1,10 @@
 package com.zju.ysoretarted.leetcode.offer;
 
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class Issue47 {
     public int maxValue(int[][] grid) {
         int leni = grid.length;
@@ -16,4 +21,16 @@ public class Issue47 {
     public static void main(String[] args) {
 
     }
+
+    public String reverseLeftWords(String s, int n) {
+        int len = s.length();
+        if(len == n)
+            return s;
+        StringBuilder builder = new StringBuilder(s.substring(n, len));
+        builder.append(s.substring(0, n));
+        return builder.toString();
+    }
+
 }
+
+
